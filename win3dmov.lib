@@ -60,12 +60,12 @@
 
 ; Defina o estilo/cor da janela aqui ----------------------
 
-%DEFINE COLOR_WINDOW	NATURE    ; veja a linha 102
+%DEFINE COLOR_WINDOW	METAL    ; veja a linha 102
 ; ---------------------------------------------------------
 
 ; Defina o estilo/cor de papéis de parede aqui ------------
 
-%DEFINE WALLCOLOR 	ICE  ;Cor dos blocos de tijolos
+%DEFINE WALLCOLOR 	DARKPASSION  ;Cor dos blocos de tijolos
 %DEFINE IRONCOLOR   METAL        ;Cor dos blocos de metal
 ; ---------------------------------------------------------
 

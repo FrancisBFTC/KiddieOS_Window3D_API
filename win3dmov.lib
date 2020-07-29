@@ -1,7 +1,7 @@
 ; ====================================================================
 ; KiddieOS - 3D Graphical Window Library - Operating System          ;
 ; Author:  Francis (BFT Corporations)                                ;
-; Version: 1.0.0                                                     ;
+; Version: 1.1.0                                                     ;
 ; Material do Curso D.S.O.S, acesse o link abaixo para acompanhar:   ;
 ; https://bityli.com/jaYPL  ==========================================
 
@@ -92,8 +92,8 @@
 %DEFINE CTRL_A       0x01
 %DEFINE CTRL_S       0x13
 %DEFINE CTRL_D       0x04
-;%DEFINE CTRL_Z       0x1A   ;uncomment
-;%DEFINE CTRL_X       0x18   ;uncomment
+%DEFINE CTRL_Z       0x1A   ;uncomment
+%DEFINE CTRL_X       0x18   ;uncomment
 ;
 ; ADICIONE MAIS TECLAS AQUI ...
 ;_________________________________________________________________________
@@ -155,7 +155,8 @@
 %MACRO Window3D 5        ; Chamada principal da janela 3D
 	ResizingWindow %2, %3, %4, %5
 	mov byte[IsMovable], %1
-	jmp Window
+	call Window  ;jmp Window
+	call WindowMoviment ;tirar
 %ENDMACRO
 
 %MACRO SaveInMemory 3    ; Salva na memória os pixels de fundo e da janela
@@ -189,7 +190,7 @@
 %MACRO WallPaper 5    ; chamada principal de algum papel de parede
 
 ; ------- Configurações iniciais para ambas as rotinas -------
-	;push cx     ;uncomment
+	push cx     ;uncomment
 	xor ax, ax
 	xor dx, dx
 	xor cx, cx
@@ -226,9 +227,9 @@ NotMore1:
 NotMore2:
 	mov bx, %4
 	mov ax, %5
-	;pop cx     ;uncomment
-	;jmp %1     ;uncomment but...
-	jmp _%1     ;comment
+	pop cx     ;uncomment
+	jmp %1     ;uncomment but...
+	;jmp _%1     ;comment
 	
 ; ----------------------------------------------------------
 
@@ -460,6 +461,7 @@ Window:
 	
 	; ADICIONE MAIS ELEMENTOS VISUAIS AQUI ...
 	; EM CASO DE NOVOS ELEMENTOS ENSIRA NOVOS REAJUSTES
+ret
 ;_________________________________________________________________________
 
 
@@ -471,30 +473,27 @@ NextStep:
 	jmp RetMovement
 
 WindowMoviment:
-	ja WaitToEnd
-	jb WaitToEnd 
 	SaveInMemory REPAINT, WIND, 0
+	cmp byte[IsMovable], MOVABLE
+	ja RetMovement ;ja WaitToEnd
+	jb WaitToEnd 
 	LoopMoviment:
 		mov ah, 00h
 		int 16h
 		cmp al, 27
-		je END
-		;cmp al, CTRL_Z      		;uncomment
-		;je ChangeToWall   			;uncomment
-		;cmp al, CTRL_X      		;uncomment
-		;je ChangeToIron			;uncomment
+		je RetMovement  
 		call VerifyKey
 		cmp al, 0
 		je LoopMoviment
 		cmp al, 2
-		je LoopMoviment
+		je RetMovement
 		GetInMemory REPAINT, WIND
 		jmp LoopMoviment
 WaitToEnd:
 	mov ah, 00h
 	int 16h
 	cmp al, 27
-	je END
+	je RetMovement   ;je SystemKernel
 	jmp WaitToEnd
 RetMovement:
 	ret
@@ -710,6 +709,10 @@ VerifyKey:
 	je ResizeDown
 	cmp al, CTRL_W
 	je ResizeUp
+	cmp al, CTRL_Z      
+	je ChangeToWall
+	cmp al, CTRL_X 
+	je ChangeToIron
 	;cmp al, OUTRA_TECLA   -> Descomente para adicionar outras teclas
 	;je AlgumaRotina          de controle para outra rotina
 	mov al, 0
@@ -745,7 +748,7 @@ DecUp:
 ResizeRight:
 	GetInMemory ERASE, BACK
 	inc word[W_Width]
-	jmp ResizeWindow
+	jmp ResizeWindow  ;jmp ResizeWindow
 ResizeLeft:
 	GetInMemory ERASE, BACK
 	dec word[W_Width]
@@ -758,6 +761,14 @@ ResizeUp:
 	GetInMemory ERASE, BACK
 	dec word[W_Height]
 	jmp ResizeWindow
+ChangeToWall:
+	mov al, 2
+	mov cx, _WALL
+ret
+ChangeToIron:
+	mov al, 2
+	mov cx, _IRON
+ret
 ; __________________________________________________________________________________
 ;
 ; ADICIONE AQUI OUTRAS ROTINAS DE FUNCIONALIDADE PELAS TECLAS...
@@ -777,7 +788,9 @@ ret
 ; uma rotina diferente é executada, chamando como última a esta.
 ; __________________________________________________________________________________
 ResizeWindow:
-	Window3D MOVABLE, word[PositionX],word[PositionY],word[W_Width],word[W_Height]
+	Window3D MOVABLE+1, word[PositionX],word[PositionY],word[W_Width],word[W_Height]
+	mov al, 0
+ret
 	
 ; __________________________________________________________________________________
 

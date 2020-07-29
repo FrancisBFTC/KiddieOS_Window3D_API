@@ -65,7 +65,7 @@
 
 ; Defina o estilo/cor de papéis de parede aqui ------------
 
-%DEFINE WALLCOLOR 	DARKPASSION  ;Cor dos blocos de tijolos
+%DEFINE WALLCOLOR   DARKPASSION  ;Cor dos blocos de tijolos
 %DEFINE IRONCOLOR   METAL        ;Cor dos blocos de metal
 ; ---------------------------------------------------------
 
@@ -92,8 +92,8 @@
 %DEFINE CTRL_A       0x01
 %DEFINE CTRL_S       0x13
 %DEFINE CTRL_D       0x04
-%DEFINE CTRL_Z       0x1A   ;uncomment
-%DEFINE CTRL_X       0x18   ;uncomment
+%DEFINE CTRL_Z       0x1A 
+%DEFINE CTRL_X       0x18 
 ;
 ; ADICIONE MAIS TECLAS AQUI ...
 ;_________________________________________________________________________
@@ -106,8 +106,8 @@
 %DEFINE NATURE         0x31
 %DEFINE WATER          0x36
 %DEFINE SALMON         0x42
-%DEFINE NATURE2		   0x48
-%DEFINE SKY			   0x4E
+%DEFINE NATURE2	       0x48
+%DEFINE SKY	       0x4E
 %DEFINE PINK           0x57
 %DEFINE PURPLELILAC    0x6A
 %DEFINE DARKPASSION    0x6F
@@ -155,8 +155,8 @@
 %MACRO Window3D 5        ; Chamada principal da janela 3D
 	ResizingWindow %2, %3, %4, %5
 	mov byte[IsMovable], %1
-	call Window  ;jmp Window
-	call WindowMoviment ;tirar
+	call Window
+	call WindowMoviment
 %ENDMACRO
 
 %MACRO SaveInMemory 3    ; Salva na memória os pixels de fundo e da janela
@@ -190,7 +190,7 @@
 %MACRO WallPaper 5    ; chamada principal de algum papel de parede
 
 ; ------- Configurações iniciais para ambas as rotinas -------
-	push cx     ;uncomment
+	push cx    
 	xor ax, ax
 	xor dx, dx
 	xor cx, cx
@@ -227,9 +227,8 @@ NotMore1:
 NotMore2:
 	mov bx, %4
 	mov ax, %5
-	pop cx     ;uncomment
-	jmp %1     ;uncomment but...
-	;jmp _%1     ;comment
+	pop cx   
+	jmp %1  
 	
 ; ----------------------------------------------------------
 
@@ -467,15 +466,11 @@ ret
 
 ; Executa a chamada de Movimento da janela com sobreposições de pixels
 ;_________________________________________________________________________
-NextStep:
-	cmp byte[IsMovable], MOVABLE
-	call WindowMoviment 
-	jmp RetMovement
 
 WindowMoviment:
 	SaveInMemory REPAINT, WIND, 0
 	cmp byte[IsMovable], MOVABLE
-	ja RetMovement ;ja WaitToEnd
+	ja RetMovement
 	jb WaitToEnd 
 	LoopMoviment:
 		mov ah, 00h
@@ -493,7 +488,7 @@ WaitToEnd:
 	mov ah, 00h
 	int 16h
 	cmp al, 27
-	je RetMovement   ;je SystemKernel
+	je RetMovement 
 	jmp WaitToEnd
 RetMovement:
 	ret

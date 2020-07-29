@@ -4,3 +4,5 @@ O KiddieOS é um sistema operacional open-source básico em desenvolvimento pelo
 
 [Clique aqui e aprenda a criar SOs no Curso D.S.O.S](https://www.youtube.com/playlist?list=PLsoiO2Be-2z8BfsSkspJfDiuKeC9-LSca)
 
+[Novas versões do win3dmov.lib, win16.lib & kernel.asm](https://github.com/FrancisBFTC/KiddieOS_Window3D_API/tree/Win3dmov.lib-1.1.0)
+

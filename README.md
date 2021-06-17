@@ -2,7 +2,8 @@
 
 ## Instruções
 
-1 - Copie e cole o arquivo "win3dmov.lib" para a pasta "Hardware" da sua pasta de desenvolvimento do KiddieOS
+1 - Copie e cole o arquivo "win3dmov.lib" para a pasta "Hardware" da sua pasta de desenvolvimento do KiddieOS.
+
 2 - Crie uma pasta chamada "KernelSerialEEPROM" na pasta do KiddieOS, Copie e cole o arquivo "KernelSerialEEPROM.ino" para dentro desta nova pasta criada.
 
 [Clique aqui e aprenda a criar SOs no Curso D.S.O.S](https://www.youtube.com/playlist?list=PLsoiO2Be-2z8BfsSkspJfDiuKeC9-LSca)

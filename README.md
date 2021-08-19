@@ -1,6 +1,24 @@
-# KiddieOS_API_1.0.0
+# KiddieOS_API_1.2.6
 
-O KiddieOS é um sistema operacional open-source básico em desenvolvimento pelo curso gratuito D.S.O.S [Desenvolvendo Sistemas Operacionais Simples]. A intenção deste sistema será: Criar, editar ou excluir arquivos, codificar em uma linguagem própria do sistema, criar objetos visuais e automatizados (desenhos) através desta linguagem, utilizar uma interface simples e intuitiva, criar novas interfaces gráficas, como: Janelas, botões, campos, etc... e estimular crianças, jovens e adultos a programar numa linguagem simples dentro do sistema operacional KiddieOS. A intenção do curso D.S.O.S é dá início ao desenvolvimento de sistemas operacionais utilizando a linguagem Assembly e entender a fundo sobre diversos conceitos internos deste tipo de sistema. Aqui neste repositório serão armazenados arquivos de APIs do KiddieOS, a imagem de disco para teste e futuramente - todo o sistema operacional completo. Visite o link abaixo para nos acompanhar no curso do Youtube, se inscreva neste canal para se manter atualizado e siga-me no GitHub. Vejo vocês lá:
+Arquivo de alternância de resoluções gráficas utilizando VESA. Através desta LIB é possível encontrar e utilizar resoluções altas.
+
+## Chamando um modo especial (Cores ARGB ou RGB)
+
+* 1 - Inclua o arquivo vesa inserindo: #include "VESA.lib"
+* 2 - Determine as variáveis "BPP_Required", "ReX_Required" e "ReY_Required", usando instrução MOV ou definindo estáticamente.
+* 3 - Execute a rotina "Set_Video_Mode" inserindo: CALL Set_Video_Mode
+
+**Nota**: o número de modo especial pode ser diferente em cada máquina ou na máquina real. 
+
+## Chamando um modo padrão (Apenas RGB)
+
+* 1 - Observe nos comentários a partir da sessão "Lista PADRÃO de Modos VESA" e encontre sua resolução.
+* 2 - Após encontrar o número do modo desejado, mova para CX e insira CX na variável "GUI.Video_Mode"
+* 3 - Capture informações do modo gráfico utilizando: CALL VBE_Info_Mode
+* 4 - Inicialize o modo gráfico utilizando: CALL VBE_Init_Mode
+* 5 - Salve informações de vídeo principais utilizando: CALL VESA.GetInfo
+
+**Nota** : As informações de vídeo principais estão na 1ª estrutura a partir da variável "GUI" nas primeiras 5 variáveis.
 
 [Clique aqui e aprenda a criar SOs no Curso D.S.O.S](https://www.youtube.com/playlist?list=PLsoiO2Be-2z8BfsSkspJfDiuKeC9-LSca)
 

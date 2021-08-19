@@ -14,3 +14,5 @@ Veja as atualizações e o progresso do projeto logo abaixo:
 
 # [Versão 1.2.1](https://github.com/FrancisBFTC/KiddieOS_Window3D_API/tree/win3dmov_lib_serial_1.2.1)
 
+# [Versão 1.2.6](https://github.com/FrancisBFTC/KiddieOS_Window3D_API/tree/graphics_lib_1.2.6)
+

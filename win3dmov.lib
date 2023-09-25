@@ -1,7 +1,7 @@
 ; ====================================================================
 ; KiddieOS - 3D Graphical Window Library - Operating System          ;
 ; Author:  Francis (BFT Corporations)                                ;
-; Version: 1.0.0                                                     ;
+; Version: 1.2.0                                                     ;
 ; Material do Curso D.S.O.S, acesse o link abaixo para acompanhar:   ;
 ; https://bityli.com/jaYPL  ==========================================
 
@@ -88,12 +88,12 @@
 %DEFINE ARROW_DOWN   0x50
 %DEFINE ARROW_RIGHT  0x4D
 %DEFINE ARROW_LEFT   0x4B
-%DEFINE CTRL_W       0x17
-%DEFINE CTRL_A       0x01
-%DEFINE CTRL_S       0x13
-%DEFINE CTRL_D       0x04
-;%DEFINE CTRL_Z       0x1A   ;uncomment
-;%DEFINE CTRL_X       0x18   ;uncomment
+%DEFINE CTRL_W       0x11
+%DEFINE CTRL_A       0x1E
+%DEFINE CTRL_S       0x1F
+%DEFINE CTRL_D       0x20
+%DEFINE CTRL_Z       0x1A   ;uncomment
+%DEFINE CTRL_X       0x18   ;uncomment
 ;
 ; ADICIONE MAIS TECLAS AQUI ...
 ;_________________________________________________________________________
@@ -155,7 +155,8 @@
 %MACRO Window3D 5        ; Chamada principal da janela 3D
 	ResizingWindow %2, %3, %4, %5
 	mov byte[IsMovable], %1
-	jmp Window
+	call WindowCreate 
+	call WindowMoviment
 %ENDMACRO
 
 %MACRO SaveInMemory 3    ; Salva na memória os pixels de fundo e da janela
@@ -189,7 +190,7 @@
 %MACRO WallPaper 5    ; chamada principal de algum papel de parede
 
 ; ------- Configurações iniciais para ambas as rotinas -------
-	;push cx     ;uncomment
+	push cx     ;uncomment
 	xor ax, ax
 	xor dx, dx
 	xor cx, cx
@@ -226,9 +227,9 @@ NotMore1:
 NotMore2:
 	mov bx, %4
 	mov ax, %5
-	;pop cx     ;uncomment
-	;jmp %1     ;uncomment but...
-	jmp _%1     ;comment
+	pop cx     ;uncomment
+	jmp %1     ;uncomment but...
+	;jmp _%1     ;comment
 	
 ; ----------------------------------------------------------
 
@@ -424,7 +425,7 @@ FinalPaper:
 
 ; Rotina que cria janela 3D com elementos visuais
 ;_________________________________________________________________________
-Window:
+WindowCreate:
 	SaveInMemory ERASE, BACK, 1
 	call Resizing1
 	__CreateWindow 0,0,0,0,0,0,0,ax,bx,cx,dx   				; Sombra da janela
@@ -460,44 +461,44 @@ Window:
 	
 	; ADICIONE MAIS ELEMENTOS VISUAIS AQUI ...
 	; EM CASO DE NOVOS ELEMENTOS ENSIRA NOVOS REAJUSTES
+ret
 ;_________________________________________________________________________
 
 
 ; Executa a chamada de Movimento da janela com sobreposições de pixels
 ;_________________________________________________________________________
-NextStep:
-	cmp byte[IsMovable], MOVABLE
-	call WindowMoviment 
-	jmp RetMovement
 
 WindowMoviment:
-	ja WaitToEnd
+	cmp byte[IsMovable], MOVABLE
+	ja RetMovement
 	jb WaitToEnd 
-	SaveInMemory REPAINT, WIND, 0
 	LoopMoviment:
-		mov ah, 00h
-		int 16h
-		cmp al, 27
-		je END
-		;cmp al, CTRL_Z      		;uncomment
-		;je ChangeToWall   			;uncomment
-		;cmp al, CTRL_X      		;uncomment
-		;je ChangeToIron			;uncomment
+		call KEYBOARD_HANDLER
+		cmp byte[KEYCODE], K_F1
+		je RetMovement
+		call VerifySerial
 		call VerifyKey
 		cmp al, 0
 		je LoopMoviment
 		cmp al, 2
-		je LoopMoviment
-		GetInMemory REPAINT, WIND
+		je RetMovement
 		jmp LoopMoviment
 WaitToEnd:
-	mov ah, 00h
-	int 16h
-	cmp al, 27
-	je END
-	jmp WaitToEnd
+	call KEYBOARD_HANDLER
+	cmp byte[KEYCODE], K_F1
+	jne WaitToEnd
 RetMovement:
 	ret
+	
+VerifySerial:
+	cmp byte[F3Status], 1
+	je RunSerial
+ret
+RunSerial:
+	mov al, byte[KEYCODE]
+	mov byte[SerialData], al
+	call SERIAL_HANDLER
+ret
 ;_________________________________________________________________________
 
 
@@ -686,6 +687,8 @@ RepaintWindow:
 		cmp dx, word[HeightWindow]
 		jne Repaint1
 ret
+
+
 ;_________________________________________________________________________
 
 
@@ -694,53 +697,76 @@ ret
 ; redimensionamento da janela através de teclas definidas
 ; ________________________________________________________________________
 VerifyKey:
-	cmp ah, ARROW_RIGHT
+	cmp byte[CursorFocus], 1
+	je CursorIsFocus
+	cmp byte[KEYCODE], ARROW_RIGHT
 	je IncRight
-	cmp ah, ARROW_LEFT
+	cmp byte[KEYCODE], ARROW_LEFT
 	je DecLeft
-	cmp ah, ARROW_DOWN
+	cmp byte[KEYCODE], ARROW_DOWN
 	je IncDown
-	cmp ah, ARROW_UP
+	cmp byte[KEYCODE], ARROW_UP
 	je DecUp
-	cmp al, CTRL_D
+	cmp byte[KEYCODE], CTRL_D
 	je ResizeRight
-	cmp al, CTRL_A
+	cmp byte[KEYCODE], CTRL_A
 	je ResizeLeft
-	cmp al, CTRL_S
+	cmp byte[KEYCODE], CTRL_S
 	je ResizeDown
-	cmp al, CTRL_W
+	cmp byte[KEYCODE], CTRL_W
 	je ResizeUp
+	cmp byte[KEYCODE], CTRL_Z
+	je ChangeToWall
+	cmp byte[KEYCODE], CTRL_X
+	je ChangeToIron
+	cmp byte[KEYCODE], K_F2
+	je InitSerial
+	cmp byte[KEYCODE], K_F3
+	je SerialSend
+	cmp byte[KEYCODE], K_F4
+	je SerialReceive
 	;cmp al, OUTRA_TECLA   -> Descomente para adicionar outras teclas
 	;je AlgumaRotina          de controle para outra rotina
 	mov al, 0
 	jmp RetVerifyKey
+CursorIsFocus:
+	mov al, 0
+ret
 IncRight:
+	SaveInMemory REPAINT, WIND, 0
 	GetInMemory ERASE, BACK
-	add word[PositionX], 2
-	add word[WidthWindow], 2
+	mov ax, 2  ;move 2 pixels
+	call UpdatePosRight
 	mov al, 1
 	SaveInMemory ERASE, BACK, 0
+	GetInMemory REPAINT, WIND
 	jmp RetVerifyKey
 DecLeft:
+	SaveInMemory REPAINT, WIND, 0
 	GetInMemory ERASE, BACK
-	sub word[PositionX], 2
-	sub word[WidthWindow], 2
+	mov ax, 2   ;move 2 pixels
+	call UpdatePosLeft
 	mov al, 1
 	SaveInMemory ERASE, BACK, 0
+	GetInMemory REPAINT, WIND
 	jmp RetVerifyKey
 IncDown:
+	SaveInMemory REPAINT, WIND, 0
 	GetInMemory ERASE, BACK
-	add word[PositionY], 2
-	add word[HeightWindow], 2
+	mov ax, 2  ;move 2 pixels
+	call UpdatePosDown
 	mov al, 1
 	SaveInMemory ERASE, BACK, 0
+	GetInMemory REPAINT, WIND
 	jmp RetVerifyKey
 DecUp:
+	SaveInMemory REPAINT, WIND, 0
 	GetInMemory ERASE, BACK
-	sub word[PositionY], 2
-	sub word[HeightWindow], 2
+	mov ax, 2  ;move 2 pixels
+	call UpdatePosUp
 	mov al, 1
 	SaveInMemory ERASE, BACK, 0
+	GetInMemory REPAINT, WIND
 	jmp RetVerifyKey
 ResizeRight:
 	GetInMemory ERASE, BACK
@@ -758,6 +784,53 @@ ResizeUp:
 	GetInMemory ERASE, BACK
 	dec word[W_Height]
 	jmp ResizeWindow
+ChangeToWall:
+	mov al, 2
+	mov cx, _WALL
+ret
+ChangeToIron:
+	mov al, 2
+	mov cx, _IRON
+ret
+InitSerial:
+	call SERIAL_INSTALL
+ret
+SerialReceive:
+	mov al, byte[KEYCODE]
+	mov byte[SerialData], al
+	call SERIAL_WRITE
+ReceiveChars:
+	call SERIAL_READ
+	mov al, byte[SerialData]
+	push ax
+	call WriteFont
+	pop ax
+	cmp al, '$'
+	jne ReceiveChars
+ret
+SerialSend:
+	mov al, byte[KEYCODE]
+	mov byte[SerialData], al
+	call SERIAL_WRITE
+ReadChars:
+	mov word[QUANT_KEY], 0000h
+	mov si, word[C_ADDR]
+	dec si
+	ReadCharSend:
+		inc si
+		mov al, byte[ds:si]
+		cmp al, 0
+		je RetSerialSend
+		push si
+		mov byte[SerialData], al
+		call SERIAL_WRITE
+		pop si
+		jmp ReadCharSend
+RetSerialSend:
+	mov al, '$'
+	mov byte[SerialData], al
+	call SERIAL_WRITE
+ret
 ; __________________________________________________________________________________
 ;
 ; ADICIONE AQUI OUTRAS ROTINAS DE FUNCIONALIDADE PELAS TECLAS...
@@ -771,13 +844,137 @@ RetVerifyKey:
 	mov dx, word[PositionY]
 ret
 
+; Atualizador de posições do redirecionamento de teclas (TextFields) e
+; do redesenho da janela durante a movimentação
+; ________________________________________________________________________
+UpdatePosRight: ;atualiza todas as posições para a direita
+	add word[PositionX], ax
+	add word[WidthWindow], ax
+	add word[POSITION_X], ax
+	add word[LIMIT_COLX], ax
+	add word[LIMIT_COLW], ax
+	mov cl, 0
+	xor bx,bx
+UpdateR:
+	add word[POSITIONS + bx], ax 
+	add bx, 4
+	add word[POSITIONS + bx], ax
+	add bx, ax
+	add word[POSITIONS + bx], ax
+	add bx, 6
+	inc cl
+	cmp cl, byte[QUANT_FIELD]
+	jne UpdateR
+ret
+
+UpdatePosLeft:	;atualiza todas as posições para a esquerda
+	sub word[PositionX], ax
+	sub word[WidthWindow], ax
+	sub word[POSITION_X], ax
+	sub word[LIMIT_COLX], ax
+	sub word[LIMIT_COLW], ax
+	mov cl, 0
+	xor bx,bx
+UpdateL:
+	sub word[POSITIONS + bx], ax 
+	add bx, 4
+	sub word[POSITIONS + bx], ax
+	add bx, ax
+	sub word[POSITIONS + bx], ax
+	add bx, 6
+	inc cl
+	cmp cl, byte[QUANT_FIELD]
+	jne UpdateL
+ret
+
+UpdatePosDown:		;atualiza todas as posições para baixo
+	add word[PositionY], ax
+	add word[HeightWindow], ax
+	add word[POSITION_Y], ax
+	mov cl, 0
+	xor bx,bx
+	add bx, ax
+UpdateD:
+	add word[POSITIONS + bx], ax
+	add bx, 12 ;8
+	inc cl
+	cmp cl, byte[QUANT_FIELD]
+	jne UpdateD
+ret
+
+UpdatePosUp:	;atualiza todas as posições para cima
+	sub word[PositionY], ax
+	sub word[HeightWindow], ax
+	sub word[POSITION_Y], ax
+	mov cl, 0
+	xor bx,bx
+	add bx, ax
+UpdateU:
+	sub word[POSITIONS + bx], ax
+	add bx, 12 ;8
+	inc cl
+	cmp cl, byte[QUANT_FIELD]
+	jne UpdateU
+ret
+
+Rewriter: ;analise
+	call WriteESC
+	xor bx, bx
+LoopTab:
+	push bx
+	call WriteTAB
+	call WriteChars
+	pop bx
+	inc bl
+	cmp bl, byte[QUANT_FIELD]
+	jne LoopTab
+	call WriteTAB
+	call WriteESC
+ret
+WriteESC:
+	mov al, K_ESC
+	__FontsWriter KEY
+WriteTAB:
+	mov al, K_TAB
+	__FontsWriter KEY
+WriteChars:
+	mov word[QUANT_KEY], 0000h
+	mov si, word[C_ADDR]
+	dec si
+	GetChars:
+		inc si
+		mov al, byte[ds:si]
+		cmp al, 0
+		je RetWriteChars
+		push si
+		call WriteFont
+		pop si
+		jmp GetChars
+WriteFont:
+	__FontsWriter KEY
+RetWriteChars:
+	ret
+
+; ________________________________________________________________________
+
 
 ; Rotina de redimensionamento de janela que captura valores
 ; pré-alterados pelas rotinas anteriores, Dependendo da tecla
 ; uma rotina diferente é executada, chamando como última a esta.
 ; __________________________________________________________________________________
 ResizeWindow:
-	Window3D MOVABLE, word[PositionX],word[PositionY],word[W_Width],word[W_Height]
+	mov byte[QUANT_FIELD], 0
+	mov byte[CountField], -1
+	mov word[QuantPos], 0000h
+	mov byte[QuantTab], 0
+	mov word[CountPositions], 0000h
+	mov byte[StatusLimitW], 0
+	mov byte[StatusLimitX], 0
+	mov byte[CursorTab], 0
+	Window3D MOVABLE+1, word[PositionX],word[PositionY],word[W_Width],word[W_Height]
+	call Rewriter
+	mov al, 0
+ret
 	
 ; __________________________________________________________________________________
 
@@ -796,6 +993,7 @@ HeightWindow  dw 0000h
 W_Width       dw 0000h
 W_Height      dw 0000h
 IsMovable     db 1
+ValuePosition dw 0000h
 
 ; __________________________________________________________________________________
 
